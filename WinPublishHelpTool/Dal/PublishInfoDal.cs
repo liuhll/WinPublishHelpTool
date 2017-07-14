@@ -34,6 +34,8 @@ namespace WinPublishHelpTool.Dal
                         BackUpDirectory = node.SelectSingleNode("./BackUpDirectory").InnerText,
                         Version = node.SelectSingleNode("./Version").InnerText,
                         OptionType = node.SelectSingleNode("./OptionType").InnerText,
+                        IsFtp = Convert.ToBoolean(node.SelectSingleNode("./IsFtp").InnerText.ToLower()),
+                        BackUpType = node.SelectSingleNode("./BackUpType").InnerText
                     };
                     _publishInfos.Add(projectInfo);
 

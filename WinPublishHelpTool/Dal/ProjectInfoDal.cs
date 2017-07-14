@@ -32,6 +32,10 @@ namespace WinPublishHelpTool.Dal
                     ProjectName = node.SelectSingleNode("./ProjectName").InnerText,
                     DestDirectory = node.SelectSingleNode("./DestDirectory").InnerText,
                     SourceDirectory = node.SelectSingleNode("./SourceDirectory").InnerText,
+                    FtpServiceAddress = node.SelectSingleNode("./FtpServiceAddress").InnerText,
+                    FtpPwd = node.SelectSingleNode("./FtpPwd").InnerText,
+                    FtpUserName = node.SelectSingleNode("./FtpUserName").InnerText,
+                    IsFtp = Convert.ToBoolean(node.SelectSingleNode("./IsFtp").InnerText)
                 };
                 _projectInfos.Add(projectInfo);
                
@@ -101,11 +105,23 @@ namespace WinPublishHelpTool.Dal
 
         public bool IsNeedUpdate(ProjectInfo newProjectInfo, ProjectInfo existProjectInfo)
         {
-            if (newProjectInfo.DestDirectory != existProjectInfo.DestDirectory || newProjectInfo.SourceDirectory != existProjectInfo.SourceDirectory)
+            if (!existProjectInfo.IsFtp)
             {
-                return true;
+                if (newProjectInfo.DestDirectory != existProjectInfo.DestDirectory || newProjectInfo.SourceDirectory != existProjectInfo.SourceDirectory)
+                {
+                    return true;
+                }
+                return false;
             }
-            return false;
+            else
+            {
+                if (newProjectInfo.FtpPwd != existProjectInfo.FtpPwd || newProjectInfo.FtpServiceAddress != existProjectInfo.FtpServiceAddress || newProjectInfo.FtpUserName != existProjectInfo.FtpUserName || newProjectInfo.SourceDirectory != existProjectInfo.SourceDirectory)
+                {
+                    return true;
+                }
+                return false;
+            }
+          
         }
 
         public void UpdateProjectInfo(ProjectInfo newProjectInfo)

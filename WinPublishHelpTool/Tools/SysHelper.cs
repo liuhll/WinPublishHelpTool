@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Web;
 
@@ -148,8 +149,15 @@ namespace WinPublishHelpTool.Tools
 
         public static string GetVersionName(string path)
         {
-            var xml = new XmlHelper(path);
-            return xml.GetNode("/projectVersion").InnerText.Trim();
+            try
+            {
+                var xml = new XmlHelper(path);
+                return xml.GetNode("/projectVersion").InnerText.Trim();
+            }
+            catch (Exception e)
+            {
+               throw new Exception("获取程序包版本号异常");
+            }
         }
 
         /// <summary>
@@ -167,7 +175,7 @@ namespace WinPublishHelpTool.Tools
             }
             else
             {
-                var versionSourceInfo = sourceVersion.Split('.').Select(p=>Convert.ToInt32(p)).ToList();
+                var versionSourceInfo = sourceVersion.Split('.').Select(p => Convert.ToInt32(p)).ToList();
                 var versionDestInfo = destVersion.Split('.').Select(p => Convert.ToInt32(p)).ToList();
                 for (int i = 0; i < versionSourceInfo.Count; i++)
                 {
@@ -178,7 +186,7 @@ namespace WinPublishHelpTool.Tools
                     }
                 }
 
-              
+
             }
             return result;
         }
@@ -232,6 +240,78 @@ namespace WinPublishHelpTool.Tools
             ds.Tables.Add(dt);
             return ds;
         }
-    }
+
+        public static string GetMD5WithFilePath(string filePath)
+        {
+            using (FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
+                byte[] hash_byte = md5.ComputeHash(file);
+                string str = System.BitConverter.ToString(hash_byte);
+                str = str.Replace("-", "");
+                return str;
+            }          
     
+        }
+
+        public static bool IsEqualFile(string sourceFile, string destFile)
+        {
+            return GetMD5WithFilePath(sourceFile).Equals(GetMD5WithFilePath(destFile));
+        }
+
+        public static void Replace(string fromDir, string toDir)
+        {
+            if (!Directory.Exists(fromDir))
+                return;
+
+            if (!Directory.Exists(toDir))
+            {
+                Directory.CreateDirectory(toDir);
+            }
+
+            string[] files = Directory.GetFiles(fromDir);
+            foreach (string formFileName in files)
+            {
+                string fileName = Path.GetFileName(formFileName);
+                string toFileName = Path.Combine(toDir, fileName);
+                if (!File.Exists(toFileName))
+                {
+                    File.Copy(formFileName, toFileName);
+                }
+                else if (!GetMD5WithFilePath(formFileName).Equals(GetMD5WithFilePath(toFileName)))
+                {
+                    File.Copy(formFileName, toFileName,true);
+                }
+            }
+            string[] fromDirs = Directory.GetDirectories(fromDir);
+            foreach (string fromDirName in fromDirs)
+            {
+                string dirName = Path.GetFileName(fromDirName);
+                string toDirName = Path.Combine(toDir, dirName);
+                Replace(fromDirName, toDirName);
+            }
+        }
+
+        public static void DeleteDir(string dirPath)
+        {
+            if (!Directory.Exists(dirPath))
+                return;
+            string[] files = Directory.GetFiles(dirPath);
+          
+            foreach (string file in files)
+            {
+                File.Delete(file);
+            }          
+            string[] dirs = Directory.GetDirectories(dirPath);           
+            foreach (var dir in dirs)
+            {
+                if (Directory.GetFiles(dir).Length > 0)
+                {
+                    DeleteDir(dir);
+                }
+            }
+            Directory.Delete(dirPath);
+        }
+    }
+
 }

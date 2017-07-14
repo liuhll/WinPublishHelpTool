@@ -19,6 +19,10 @@ namespace WinPublishHelpTool.Tools
 
         private static string connectionString =string.Empty;
 
+        public static string ConnectionString {
+            get { return connectionString; }
+        }
+
         public static void SetConnection(string connectionStr)
         {
             SqlHelper.connectionString = connectionStr;

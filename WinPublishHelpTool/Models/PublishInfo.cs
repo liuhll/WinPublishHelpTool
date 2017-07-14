@@ -1,10 +1,15 @@
-﻿using WinPublishHelpTool.Commons;
+﻿using System;
+using WinPublishHelpTool.Commons;
 using WinPublishHelpTool.Dal;
 
 namespace WinPublishHelpTool.Models
 {
     public class PublishInfo
     {
+        public PublishInfo()
+        {
+            IsFtp = false;
+        }
 
         public string Id { get; set; }
 
@@ -30,7 +35,11 @@ namespace WinPublishHelpTool.Models
 
         public string PublishDate { get; set; }
 
+        public string BackUpType { get; set; }
+
         public string BackUpDirectory { get; set; }
+
+        public bool IsFtp { get; set; }
 
     }
 }
